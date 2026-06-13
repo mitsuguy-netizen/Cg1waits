@@ -46,13 +46,22 @@
         let mainFilter = 'all'; 
         let sortMode = 'shortest';
 
+        // Comprehensive ride list based on all your feedback
         const trueRides = new Set([
+            // Epcot
             "Journey Into Imagination with Figment", "Soarin' Around the World", "Soarin' Across America",
             "Gran Fiesta Tour Starring The Three Caballeros", "Test Track", "Frozen Ever After", 
             "Guardians of the Galaxy: Cosmic Rewind", "Mission: SPACE", "The Seas with Nemo & Friends",
             "Remy's Ratatouille Adventure", "Living with the Land", "Spaceship Earth",
+            // Hollywood Studios
             "Rise of the Resistance", "Alien Swirling Saucers", "Star Tours: The Adventures Continue",
-            "It's a Small World", "Buzz Lightyear's Space Ranger Spin", "Under the Sea \~ Journey of the Little Mermaid"
+            "TRON Lightcycle / Run", "Slinky Dog Dash", "Millennium Falcon: Smugglers Run",
+            // Magic Kingdom
+            "Space Mountain", "Big Thunder Mountain Railroad", "Seven Dwarfs Mine Train", "Tiana's Bayou Adventure",
+            "Pirates of the Caribbean", "Haunted Mansion", "Jungle Cruise", "The Twilight Zone Tower of Terror",
+            "It's a Small World", "Buzz Lightyear's Space Ranger Spin", "Under the Sea \~ Journey of the Little Mermaid",
+            "Peter Pan's Flight", "The Many Adventures of Winnie the Pooh", "Prince Charming Regal Carrousel",
+            "The Barnstormer", "Dumbo the Flying Elephant", "Mad Tea Party", "Tomorrowland Speedway"
         ]);
 
         const parks = {
@@ -81,7 +90,7 @@
                     item.entityType === "ATTRACTION" || item.entityType === "SHOW"
                 ).map(item => {
                     const name = item.name || '';
-                    const lowerName = name.toLowerCase();
+                    const lower = name.toLowerCase();
                     return {
                         id: item.id || 'ride-' + Math.random().toString(36).substr(2,9),
                         name: name,
@@ -89,18 +98,18 @@
                         status: item.status || "Unknown",
                         type: item.entityType,
                         isTrueRide: trueRides.has(name) || 
-                                   lowerName.includes("mountain") || 
-                                   lowerName.includes("coaster") || 
-                                   lowerName.includes("run") ||
-                                   lowerName.includes("tower") ||
-                                   lowerName.includes("splash") ||
-                                   lowerName.includes("flight") ||
-                                   lowerName.includes("river") ||
-                                   lowerName.includes("soarin") ||
-                                   lowerName.includes("resistance") ||
-                                   lowerName.includes("swirling") ||
-                                   lowerName.includes("star tours"),
-                        isMeet: lowerName.includes("meet") || lowerName.includes("meets") || lowerName.includes("character")
+                                   lower.includes("mountain") || 
+                                   lower.includes("coaster") || 
+                                   lower.includes("run") ||
+                                   lower.includes("tower") ||
+                                   lower.includes("splash") ||
+                                   lower.includes("flight") ||
+                                   lower.includes("river") ||
+                                   lower.includes("soarin") ||
+                                   lower.includes("resistance") ||
+                                   lower.includes("swirling") ||
+                                   lower.includes("star tours"),
+                        isMeet: lower.includes("meet") || lower.includes("meets") || lower.includes("character")
                     };
                 });
 
