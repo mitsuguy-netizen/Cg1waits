@@ -38,10 +38,15 @@
     </div>
 
     <script>
-        let currentData = [], favorites = JSON.parse(localStorage.getItem('cg1Favorites')) || [], showOnlyFavorites = false, sortMode = 'shortest';
+        let currentData = [];
+        let favorites = JSON.parse(localStorage.getItem('cg1Favorites')) || [];
+        let showOnlyFavorites = false;
+        let sortMode = 'shortest';
 
         function updateClock() {
-            setInterval(() => document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}), 1000);
+            setInterval(() => {
+                document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+            }, 1000);
         }
 
         const parkMap = {
@@ -62,14 +67,18 @@
                 statusEl.textContent = `Updated • ${currentData.length} rides`;
             } catch(e) {
                 statusEl.textContent = 'Using mock data';
-                currentData = [{id:'1',name:"Guardians",wait:65,status:"Open"},{id:'2',name:"Test Track",wait:40,status:"Open"},{id:'3',name:"Frozen Ever After",wait:35,status:"Open"}];
+                currentData = [
+                    {id:'1', name:"Guardians of the Galaxy: Cosmic Rewind", wait:65, status:"Open"},
+                    {id:'2', name:"Test Track", wait:40, status:"Open"},
+                    {id:'3', name:"Frozen Ever After", wait:35, status:"Open"}
+                ];
                 renderRides();
             }
         }
 
         function processData(raw) {
             return (raw.liveData || []).filter(i => i.entityType === 'ATTRACTION').map(item => ({
-                id: item.id || 'ride-'+Math.random().toString(36).substr(2,9),
+                id: item.id || 'ride-' + Math.random().toString(36).substr(2,9),
                 name: item.name,
                 wait: parseInt(item.queue?.STANDBY?.waitTime) || 0,
                 status: item.status || 'Unknown'
@@ -77,9 +86,13 @@
         }
 
         function isFavorite(id) { return favorites.includes(id); }
+
         function toggleFavorite(id) {
-            if (favorites.includes(id)) favorites = favorites.filter(x=>x!==id);
-            else favorites.push(id);
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(x => x !== id);
+            } else {
+                favorites.push(id);
+            }
             localStorage.setItem('cg1Favorites', JSON.stringify(favorites));
             renderRides();
         }
@@ -91,42 +104,63 @@
         }
 
         function cycleSort() {
-            if (sortMode === 'shortest') { sortMode = 'longest'; document.getElementById('sort-btn').textContent = 'Longest'; }
-            else if (sortMode === 'longest') { sortMode = 'name'; document.getElementById('sort-btn').textContent = 'Name'; }
-            else { sortMode = 'shortest'; document.getElementById('sort-btn').textContent = 'Shortest'; }
+            if (sortMode === 'shortest') {
+                sortMode = 'longest';
+                document.getElementById('sort-btn').textContent = 'Longest';
+            } else if (sortMode === 'longest') {
+                sortMode = 'name';
+                document.getElementById('sort-btn').textContent = 'Name';
+            } else {
+                sortMode = 'shortest';
+                document.getElementById('sort-btn').textContent = 'Shortest';
+            }
             renderRides();
         }
 
         function renderRides() {
             let filtered = showOnlyFavorites ? currentData.filter(r => isFavorite(r.id)) : currentData;
             let sorted = [...filtered];
-            if (sortMode === 'shortest') sorted.sort((a,b)=>a.wait-b.wait);
-            else if (sortMode === 'longest') sorted.sort((a,b)=>b.wait-a.wait);
-            else sorted.sort((a,b)=>a.name.localeCompare(b.name));
+            if (sortMode === 'shortest') sorted.sort((a,b) => a.wait - b.wait);
+            else if (sortMode === 'longest') sorted.sort((a,b) => b.wait - a.wait);
+            else sorted.sort((a,b) => a.name.localeCompare(b.name));
 
-            const html = sorted.map(ride => `
-                <div class="ride-card flex justify-between items-center">
-                    <div class="flex-1">
-                        <div class="text-xl font-medium">${ride.name}</div>
-                        <div class="text-sm text-gray-400">${ride.status}</div>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span onclick="toggleFavorite('${ride.id}')" class="star \( {isFavorite(ride.id)?'text-yellow-400':'text-gray-500'}"> \){isFavorite(ride.id)?'★':'☆'}</span>
-                        <div class="text-right">
-                            <div class="big-wait font-bold \( {ride.wait<30?'text-green-400':ride.wait<60?'text-yellow-400':'text-red-400'}"> \){ride.wait}</div>
-                            <div class="text-xs -mt-1">min</div>
+            let html = '';
+            sorted.forEach(ride => {
+                const star = isFavorite(ride.id) ? '★' : '☆';
+                const starColor = isFavorite(ride.id) ? 'text-yellow-400' : 'text-gray-500';
+                const waitColor = ride.wait < 30 ? 'text-green-400' : ride.wait < 60 ? 'text-yellow-400' : 'text-red-400';
+                html += `
+                    <div class="ride-card flex justify-between items-center">
+                        <div class="flex-1">
+                            <div class="text-xl font-medium">${ride.name}</div>
+                            <div class="text-sm text-gray-400">${ride.status}</div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span onclick="toggleFavorite('${ride.id}')" class="star \( {starColor}"> \){star}</span>
+                            <div class="text-right">
+                                <div class="big-wait font-bold \( {waitColor}"> \){ride.wait}</div>
+                                <div class="text-xs -mt-1">min</div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
-            document.getElementById('rides-list').innerHTML = html || '<div class="text-center py-8 text-gray-400">No rides</div>';
+                `;
+            });
+
+            document.getElementById('rides-list').innerHTML = html || '<div class="text-center py-8 text-gray-400">No rides loaded</div>';
         }
 
-        function loadWaits() { fetchWaits(document.getElementById('park-select').value); }
-        function refreshData() { loadWaits(); }
+        function loadWaits() {
+            fetchWaits(document.getElementById('park-select').value);
+        }
+
+        function refreshData() {
+            loadWaits();
+        }
 
         // Auto refresh every 3 minutes
-        setInterval(() => { if (document.visibilityState === 'visible') refreshData(); }, 180000);
+        setInterval(() => {
+            if (document.visibilityState === 'visible') refreshData();
+        }, 180000);
 
         updateClock();
         loadWaits();
