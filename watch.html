@@ -77,9 +77,9 @@
                 const res = await fetch("https://api.themeparks.wiki/v1/entity/" + pid + "/live");
                 const data = await res.json();
 
-                currentRides = (data.liveData || []).filter(function(item) { 
-                    return item.entityType === "ATTRACTION" || item.entityType === "SHOW"; 
-                }).map(function(item) {
+                currentRides = (data.liveData || []).filter(item => 
+                    item.entityType === "ATTRACTION" || item.entityType === "SHOW"
+                ).map(item => {
                     const name = item.name || '';
                     return {
                         id: item.id || 'ride-' + Math.random().toString(36).substr(2,9),
@@ -114,7 +114,7 @@
 
         function toggleStar(id) {
             if (isFav(id)) {
-                favorites = favorites.filter(function(x) { return x !== id; });
+                favorites = favorites.filter(x => x !== id);
             } else {
                 favorites.push(id);
             }
@@ -154,7 +154,7 @@
         }
 
         function renderList() {
-            let rides = currentRides;
+            let rides = currentRides.slice();
 
             if (mainFilter === 'ride') {
                 rides = rides.filter(r => r.isTrueRide);
@@ -166,10 +166,10 @@
                 rides = rides.filter(r => isFav(r.id));
             }
 
-            let sorted = rides.slice();
-            if (sortMode === 'shortest') sorted.sort((a,b) => a.wait - b.wait);
-            else if (sortMode === 'longest') sorted.sort((a,b) => b.wait - a.wait);
-            else sorted.sort((a,b) => a.name.localeCompare(b.name));
+            let sorted = rides;
+            if (sortMode === 'shortest') sorted = sorted.sort((a,b) => a.wait - b.wait);
+            else if (sortMode === 'longest') sorted = sorted.sort((a,b) => b.wait - a.wait);
+            else sorted = sorted.sort((a,b) => a.name.localeCompare(b.name));
 
             let html = "";
             sorted.forEach(ride => {
