@@ -32,7 +32,7 @@
     </select>
 
     <div class="flex gap-2 mb-4">
-        <button onclick="cycleFilter()" id="mainFilterBtn" class="flex-1 py-3 bg-purple-600 rounded-2xl text-sm">All</button>
+        <button onclick="cycleMainFilter()" id="mainBtn" class="flex-1 py-3 bg-purple-600 rounded-2xl text-sm">All</button>
         <button onclick="cycleSort()" id="sortBtn" class="flex-1 py-3 bg-blue-600 rounded-2xl text-sm">Shortest</button>
         <button onclick="loadData()" class="flex-1 py-3 bg-gray-700 rounded-2xl text-sm">Refresh</button>
     </div>
@@ -43,7 +43,7 @@
     <script>
         let currentRides = [];
         let favorites = JSON.parse(localStorage.getItem('cg1Favorites')) || [];
-        let filterMode = 'all'; // 'all', 'ride', 'entertainment', 'favs'
+        let mainFilter = 'all'; // 'all', 'ride', 'show', 'favs'
         let sortMode = 'shortest';
 
         const parks = {
@@ -76,7 +76,7 @@
                         name: item.name,
                         wait: parseInt(item.queue && item.queue.STANDBY && item.queue.STANDBY.waitTime) || 0,
                         status: item.status || "Unknown",
-                        type: item.entityType
+                        type: item.entityType  // ATTRACTION = rides/experiences, SHOW = entertainment
                     };
                 });
 
@@ -99,16 +99,16 @@
             renderList();
         }
 
-        function cycleFilter() {
-            if (filterMode === 'all') filterMode = 'ride';
-            else if (filterMode === 'ride') filterMode = 'entertainment';
-            else if (filterMode === 'entertainment') filterMode = 'favs';
-            else filterMode = 'all';
+        function cycleMainFilter() {
+            if (mainFilter === 'all') mainFilter = 'ride';
+            else if (mainFilter === 'ride') mainFilter = 'show';
+            else if (mainFilter === 'show') mainFilter = 'favs';
+            else mainFilter = 'all';
 
-            const btn = document.getElementById('mainFilterBtn');
-            if (filterMode === 'ride') btn.textContent = 'Rides';
-            else if (filterMode === 'entertainment') btn.textContent = 'Shows';
-            else if (filterMode === 'favs') btn.textContent = '⭐ Favs';
+            const btn = document.getElementById('mainBtn');
+            if (mainFilter === 'ride') btn.textContent = 'Rides';
+            else if (mainFilter === 'show') btn.textContent = 'Shows';
+            else if (mainFilter === 'favs') btn.textContent = '⭐ Favs';
             else btn.textContent = 'All';
 
             renderList();
@@ -131,11 +131,11 @@
         function renderList() {
             let rides = currentRides;
 
-            if (filterMode === 'ride') {
+            if (mainFilter === 'ride') {
                 rides = rides.filter(function(r) { return r.type === 'ATTRACTION'; });
-            } else if (filterMode === 'entertainment') {
+            } else if (mainFilter === 'show') {
                 rides = rides.filter(function(r) { return r.type === 'SHOW'; });
-            } else if (filterMode === 'favs') {
+            } else if (mainFilter === 'favs') {
                 rides = rides.filter(function(r) { return isFav(r.id); });
             }
 
@@ -174,7 +174,7 @@
                 '</div>';
             }
 
-            document.getElementById('list').innerHTML = html || "<p style='text-align:center;padding:20px 0;color:#9ca3af'>No rides</p>";
+            document.getElementById('list').innerHTML = html || "<p style='text-align:center;padding:20px 0;color:#9ca3af'>No items</p>";
         }
 
         setInterval(function() {
