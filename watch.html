@@ -43,16 +43,23 @@
     <script>
         let currentRides = [];
         let favorites = JSON.parse(localStorage.getItem('cg1Favorites')) || [];
-        let mainFilter = 'all'; // 'all', 'ride', 'attraction', 'show', 'favs'
+        let mainFilter = 'all'; 
         let sortMode = 'shortest';
 
-        // Strong ride list (true thrill / major rides)
+        // Much larger ride list (everyride.com style)
         const trueRides = new Set([
             "Guardians of the Galaxy: Cosmic Rewind", "Test Track", "Frozen Ever After", "TRON Lightcycle / Run",
             "Space Mountain", "Big Thunder Mountain Railroad", "Seven Dwarfs Mine Train", "Tiana's Bayou Adventure",
             "Pirates of the Caribbean", "Haunted Mansion", "Jungle Cruise", "The Twilight Zone Tower of Terror",
             "Rock 'n' Roller Coaster", "Rise of the Resistance", "Millennium Falcon: Smugglers Run", "Slinky Dog Dash",
-            "Expedition Everest", "Avatar Flight of Passage", "Kilimanjaro Safaris", "Flight of Passage", "Na'vi River Journey"
+            "Expedition Everest", "Avatar Flight of Passage", "Kilimanjaro Safaris", "Na'vi River Journey",
+            "Peter Pan's Flight", "The Many Adventures of Winnie the Pooh", "Buzz Lightyear's Space Ranger Spin",
+            "It's a Small World", "The Barnstormer", "Dumbo the Flying Elephant", "Mad Tea Party", "Prince Charming Regal Carrousel",
+            "Under the Sea \~ Journey of the Little Mermaid", "Remy's Ratatouille Adventure", "Soarin' Around the World",
+            "Mission: SPACE", "The Seas with Nemo & Friends", "Living with the Land", "Gran Fiesta Tour",
+            "Toy Story Mania!", "Star Tours", "The Magic Carpets of Aladdin", "Tomorrowland Speedway", "Astro Orbiter",
+            "Tomorrowland Transit Authority PeopleMover", "Carousel of Progress", "Country Bear Jamboree", "Hall of Presidents",
+            "Liberty Square Riverboat", "The Enchanted Tiki Room", "Kali River Rapids", "Triceratops Spin"
         ]);
 
         const parks = {
@@ -80,14 +87,21 @@
                 currentRides = (data.liveData || []).filter(function(item) { 
                     return item.entityType === "ATTRACTION" || item.entityType === "SHOW"; 
                 }).map(function(item) {
+                    const name = item.name || '';
                     return {
                         id: item.id || 'ride-' + Math.random().toString(36).substr(2,9),
-                        name: item.name,
+                        name: name,
                         wait: parseInt(item.queue && item.queue.STANDBY && item.queue.STANDBY.waitTime) || 0,
                         status: item.status || "Unknown",
                         type: item.entityType,
-                        isTrueRide: trueRides.has(item.name) || item.name.toLowerCase().includes("mountain") || 
-                                   item.name.toLowerCase().includes("coaster") || item.name.toLowerCase().includes("run")
+                        isTrueRide: trueRides.has(name) || 
+                                   name.toLowerCase().includes("mountain") || 
+                                   name.toLowerCase().includes("coaster") || 
+                                   name.toLowerCase().includes("run") ||
+                                   name.toLowerCase().includes("tower") ||
+                                   name.toLowerCase().includes("splash") ||
+                                   name.toLowerCase().includes("flight") ||
+                                   name.toLowerCase().includes("river")
                     };
                 });
 
