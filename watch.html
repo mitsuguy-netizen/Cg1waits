@@ -46,14 +46,13 @@
         let mainFilter = 'all'; 
         let sortMode = 'shortest';
 
-        // Refined true rides list based on your screenshot + previous requests
         const trueRides = new Set([
             "Journey Into Imagination with Figment", "Figment", "Soarin' Around the World", "Soarin' Across America",
-            "Gran Fiesta Tour Starring The Three Caballeros", "Tres Caballeros",
-            "Test Track", "Frozen Ever After", "Guardians of the Galaxy: Cosmic Rewind",
-            "Mission: SPACE", "The Seas with Nemo & Friends", "Remy's Ratatouille Adventure",
-            "Living with the Land", "Spaceship Earth"
-            // Add more here if needed
+            "Gran Fiesta Tour Starring The Three Caballeros", "Test Track", "Frozen Ever After", 
+            "Guardians of the Galaxy: Cosmic Rewind", "Mission: SPACE", "The Seas with Nemo & Friends",
+            "Remy's Ratatouille Adventure", "Living with the Land", "Spaceship Earth",
+            "Rise of the Resistance", "Alien Swirling Saucers", "Star Tours: The Adventures Continue",
+            "It's a Small World", "Buzz Lightyear's Space Ranger Spin", "Under the Sea \~ Journey of the Little Mermaid"
         ]);
 
         const parks = {
@@ -79,7 +78,7 @@
                 const data = await res.json();
 
                 currentRides = (data.liveData || []).filter(function(item) { 
-                    return item.entityType === "ATTRACTION"; 
+                    return item.entityType === "ATTRACTION" || item.entityType === "SHOW"; 
                 }).map(function(item) {
                     const name = item.name || '';
                     return {
@@ -87,6 +86,7 @@
                         name: name,
                         wait: parseInt(item.queue && item.queue.STANDBY && item.queue.STANDBY.waitTime) || 0,
                         status: item.status || "Unknown",
+                        type: item.entityType,
                         isTrueRide: trueRides.has(name) || 
                                    name.toLowerCase().includes("mountain") || 
                                    name.toLowerCase().includes("coaster") || 
@@ -94,7 +94,12 @@
                                    name.toLowerCase().includes("tower") ||
                                    name.toLowerCase().includes("splash") ||
                                    name.toLowerCase().includes("flight") ||
-                                   name.toLowerCase().includes("river")
+                                   name.toLowerCase().includes("river") ||
+                                   name.toLowerCase().includes("figment") ||
+                                   name.toLowerCase().includes("soarin") ||
+                                   name.toLowerCase().includes("resistance") ||
+                                   name.toLowerCase().includes("swirling") ||
+                                   name.toLowerCase().includes("star tours")
                     };
                 });
 
@@ -152,23 +157,22 @@
             let rides = currentRides;
 
             if (mainFilter === 'ride') {
-                rides = rides.filter(function(r) { return r.isTrueRide; });
+                rides = rides.filter(r => r.isTrueRide);
             } else if (mainFilter === 'attraction') {
-                rides = rides.filter(function(r) { return r.type === 'ATTRACTION'; });
+                rides = rides.filter(r => r.type === 'ATTRACTION' && !r.isTrueRide);
             } else if (mainFilter === 'show') {
-                rides = rides.filter(function(r) { return r.type === 'SHOW'; });
+                rides = rides.filter(r => r.type === 'SHOW');
             } else if (mainFilter === 'favs') {
-                rides = rides.filter(function(r) { return isFav(r.id); });
+                rides = rides.filter(r => isFav(r.id));
             }
 
             let sorted = rides.slice();
-            if (sortMode === 'shortest') sorted.sort(function(a,b){ return a.wait - b.wait; });
-            else if (sortMode === 'longest') sorted.sort(function(a,b){ return b.wait - a.wait; });
-            else sorted.sort(function(a,b){ return a.name.localeCompare(b.name); });
+            if (sortMode === 'shortest') sorted.sort((a,b) => a.wait - b.wait);
+            else if (sortMode === 'longest') sorted.sort((a,b) => b.wait - a.wait);
+            else sorted.sort((a,b) => a.name.localeCompare(b.name));
 
             let html = "";
-            for (var i = 0; i < sorted.length; i++) {
-                var ride = sorted[i];
+            sorted.forEach(ride => {
                 var star = isFav(ride.id) ? '★' : '☆';
                 var isDown = ride.status && (ride.status.toUpperCase().includes("CLOSE") || ride.status.toUpperCase().includes("DOWN"));
                 
@@ -194,7 +198,7 @@
                         '</div>' +
                     '</div>' +
                 '</div>';
-            }
+            });
 
             document.getElementById('list').innerHTML = html || "<p style='text-align:center;padding:20px 0;color:#9ca3af'>No items</p>";
         }
