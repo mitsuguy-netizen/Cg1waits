@@ -32,8 +32,7 @@
     </select>
 
     <div class="flex gap-2 mb-4">
-        <button onclick="toggleFavs()" id="favBtn" class="flex-1 py-3 bg-purple-600 rounded-2xl text-sm">⭐ Favs</button>
-        <button onclick="toggleTypeFilter()" id="typeBtn" class="flex-1 py-3 bg-green-600 rounded-2xl text-sm">All</button>
+        <button onclick="cycleFilter()" id="mainFilterBtn" class="flex-1 py-3 bg-purple-600 rounded-2xl text-sm">All</button>
         <button onclick="cycleSort()" id="sortBtn" class="flex-1 py-3 bg-blue-600 rounded-2xl text-sm">Shortest</button>
         <button onclick="loadData()" class="flex-1 py-3 bg-gray-700 rounded-2xl text-sm">Refresh</button>
     </div>
@@ -44,8 +43,7 @@
     <script>
         let currentRides = [];
         let favorites = JSON.parse(localStorage.getItem('cg1Favorites')) || [];
-        let showFavsOnly = false;
-        let typeFilter = 'all'; // 'all', 'ride', 'entertainment'
+        let filterMode = 'all'; // 'all', 'ride', 'entertainment', 'favs'
         let sortMode = 'shortest';
 
         const parks = {
@@ -78,7 +76,7 @@
                         name: item.name,
                         wait: parseInt(item.queue && item.queue.STANDBY && item.queue.STANDBY.waitTime) || 0,
                         status: item.status || "Unknown",
-                        type: item.entityType // "ATTRACTION" or "SHOW"
+                        type: item.entityType
                     };
                 });
 
@@ -101,22 +99,18 @@
             renderList();
         }
 
-        function toggleFavs() {
-            showFavsOnly = !showFavsOnly;
-            document.getElementById('favBtn').textContent = showFavsOnly ? "All" : "⭐ Favs";
-            renderList();
-        }
+        function cycleFilter() {
+            if (filterMode === 'all') filterMode = 'ride';
+            else if (filterMode === 'ride') filterMode = 'entertainment';
+            else if (filterMode === 'entertainment') filterMode = 'favs';
+            else filterMode = 'all';
 
-        function toggleTypeFilter() {
-            if (typeFilter === 'all') typeFilter = 'ride';
-            else if (typeFilter === 'ride') typeFilter = 'entertainment';
-            else typeFilter = 'all';
-            
-            const btn = document.getElementById('typeBtn');
-            if (typeFilter === 'ride') btn.textContent = 'Rides';
-            else if (typeFilter === 'entertainment') btn.textContent = 'Shows';
+            const btn = document.getElementById('mainFilterBtn');
+            if (filterMode === 'ride') btn.textContent = 'Rides';
+            else if (filterMode === 'entertainment') btn.textContent = 'Shows';
+            else if (filterMode === 'favs') btn.textContent = '⭐ Favs';
             else btn.textContent = 'All';
-            
+
             renderList();
         }
 
@@ -136,12 +130,13 @@
 
         function renderList() {
             let rides = currentRides;
-            if (showFavsOnly) rides = rides.filter(function(r) { return isFav(r.id); });
-            
-            if (typeFilter === 'ride') {
+
+            if (filterMode === 'ride') {
                 rides = rides.filter(function(r) { return r.type === 'ATTRACTION'; });
-            } else if (typeFilter === 'entertainment') {
+            } else if (filterMode === 'entertainment') {
                 rides = rides.filter(function(r) { return r.type === 'SHOW'; });
+            } else if (filterMode === 'favs') {
+                rides = rides.filter(function(r) { return isFav(r.id); });
             }
 
             let sorted = rides.slice();
