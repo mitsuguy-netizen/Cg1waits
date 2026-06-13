@@ -46,7 +46,7 @@
         let mainFilter = 'all'; 
         let sortMode = 'shortest';
 
-        // Comprehensive ride list based on all your feedback
+        // Comprehensive rides list (your latest MK additions + previous)
         const trueRides = new Set([
             // Epcot
             "Journey Into Imagination with Figment", "Soarin' Around the World", "Soarin' Across America",
@@ -55,13 +55,15 @@
             "Remy's Ratatouille Adventure", "Living with the Land", "Spaceship Earth",
             // Hollywood Studios
             "Rise of the Resistance", "Alien Swirling Saucers", "Star Tours: The Adventures Continue",
-            "TRON Lightcycle / Run", "Slinky Dog Dash", "Millennium Falcon: Smugglers Run",
             // Magic Kingdom
             "Space Mountain", "Big Thunder Mountain Railroad", "Seven Dwarfs Mine Train", "Tiana's Bayou Adventure",
             "Pirates of the Caribbean", "Haunted Mansion", "Jungle Cruise", "The Twilight Zone Tower of Terror",
             "It's a Small World", "Buzz Lightyear's Space Ranger Spin", "Under the Sea \~ Journey of the Little Mermaid",
             "Peter Pan's Flight", "The Many Adventures of Winnie the Pooh", "Prince Charming Regal Carrousel",
-            "The Barnstormer", "Dumbo the Flying Elephant", "Mad Tea Party", "Tomorrowland Speedway"
+            "The Barnstormer", "Dumbo the Flying Elephant", "Mad Tea Party", "Tomorrowland Speedway",
+            "Astro Orbiter", "The Magic Carpets of Aladdin", "Walt Disney World Railroad",
+            "Tomorrowland Transit Authority PeopleMover", "Walt Disney's Enchanted Tiki Room",
+            "Walt Disney's Carousel of Progress", "Swiss Family Treehouse"
         ]);
 
         const parks = {
@@ -108,8 +110,7 @@
                                    lower.includes("soarin") ||
                                    lower.includes("resistance") ||
                                    lower.includes("swirling") ||
-                                   lower.includes("star tours"),
-                        isMeet: lower.includes("meet") || lower.includes("meets") || lower.includes("character")
+                                   lower.includes("star tours")
                     };
                 });
 
