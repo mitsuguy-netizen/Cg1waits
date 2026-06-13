@@ -13,7 +13,10 @@
     </style>
 </head>
 <body>
-    <h1 class="text-2xl font-bold text-blue-400 mb-4">CG1 Watch</h1>
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-2xl font-bold text-blue-400">CG1 Watch</h1>
+        <div id="clock" class="font-mono text-lg"></div>
+    </div>
     
     <select id="park" onchange="loadData()" class="w-full p-4 bg-gray-800 rounded-2xl text-xl mb-4">
         <option value="epcot" selected>EPCOT</option>
@@ -43,6 +46,13 @@
             hs: "288747d1-8b4f-4a64-867e-ea7c9b27bad8",
             ak: "1c84a229-8862-4648-9c71-378ddd2c7693"
         };
+
+        function updateClock() {
+            const clockEl = document.getElementById('clock');
+            setInterval(() => {
+                clockEl.textContent = new Date().toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+            }, 1000);
+        }
 
         async function loadData() {
             const status = document.getElementById('status');
@@ -132,6 +142,13 @@
             document.getElementById('list').innerHTML = html || "<p class='text-center py-8 text-gray-400'>No rides</p>";
         }
 
+        // Auto-refresh every 3 minutes
+        setInterval(() => {
+            if (document.visibilityState === 'visible') loadData();
+        }, 180000);
+
+        // Init
+        updateClock();
         loadData();
     </script>
 </body>
