@@ -49,7 +49,7 @@
 
         function updateClock() {
             const clockEl = document.getElementById('clock');
-            setInterval(() => {
+            setInterval(function() {
                 clockEl.textContent = new Date().toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
             }, 1000);
         }
@@ -62,12 +62,16 @@
                 const res = await fetch("https://api.themeparks.wiki/v1/entity/" + pid + "/live");
                 const data = await res.json();
 
-                currentRides = (data.liveData || []).filter(item => item.entityType === "ATTRACTION").map(item => ({
-                    id: item.id || 'ride-' + Math.random().toString(36).substr(2,9),
-                    name: item.name,
-                    wait: parseInt(item.queue?.STANDBY?.waitTime) || 0,
-                    status: item.status || "Unknown"
-                }));
+                currentRides = (data.liveData || []).filter(function(item) { 
+                    return item.entityType === "ATTRACTION"; 
+                }).map(function(item) {
+                    return {
+                        id: item.id || 'ride-' + Math.random().toString(36).substr(2,9),
+                        name: item.name,
+                        wait: parseInt(item.queue && item.queue.STANDBY && item.queue.STANDBY.waitTime) || 0,
+                        status: item.status || "Unknown"
+                    };
+                });
 
                 renderList();
                 status.textContent = "Updated just now";
@@ -81,7 +85,7 @@
 
         function toggleStar(id) {
             if (isFav(id)) {
-                favorites = favorites.filter(x => x !== id);
+                favorites = favorites.filter(function(x) { return x !== id; });
             } else {
                 favorites.push(id);
             }
@@ -111,39 +115,44 @@
 
         function renderList() {
             let rides = currentRides;
-            if (showFavsOnly) rides = rides.filter(r => isFav(r.id));
+            if (showFavsOnly) {
+                rides = rides.filter(function(r) { return isFav(r.id); });
+            }
 
             let sorted = rides.slice();
-            if (sortMode === 'shortest') sorted.sort((a,b) => a.wait - b.wait);
-            else if (sortMode === 'longest') sorted.sort((a,b) => b.wait - a.wait);
-            else sorted.sort((a,b) => a.name.localeCompare(b.name));
+            if (sortMode === 'shortest') {
+                sorted.sort(function(a,b){ return a.wait - b.wait; });
+            } else if (sortMode === 'longest') {
+                sorted.sort(function(a,b){ return b.wait - a.wait; });
+            } else {
+                sorted.sort(function(a,b){ return a.name.localeCompare(b.name); });
+            }
 
             let html = "";
-            sorted.forEach(ride => {
-                const star = isFav(ride.id) ? '★' : '☆';
-                const color = ride.wait < 30 ? 'text-green-400' : ride.wait < 60 ? 'text-yellow-400' : 'text-red-400';
-                html += `
-                    <div class="card flex justify-between items-center">
-                        <div class="flex-1">
-                            <div class="text-lg">${ride.name}</div>
-                            <div class="text-sm text-gray-400">${ride.status}</div>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <span onclick="toggleStar('\( {ride.id}')" class="star"> \){star}</span>
-                            <div class="text-right">
-                                <div class="wait \( {color}"> \){ride.wait}</div>
-                                <div class="text-xs -mt-1">min</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
+            for (var i = 0; i < sorted.length; i++) {
+                var ride = sorted[i];
+                var star = isFav(ride.id) ? '★' : '☆';
+                var color = ride.wait < 30 ? 'text-green-400' : (ride.wait < 60 ? 'text-yellow-400' : 'text-red-400');
+                html += '<div class="card flex justify-between items-center">' +
+                    '<div class="flex-1">' +
+                        '<div class="text-lg">' + ride.name + '</div>' +
+                        '<div class="text-sm text-gray-400">' + ride.status + '</div>' +
+                    '</div>' +
+                    '<div class="flex items-center gap-4">' +
+                        '<span onclick="toggleStar(\'' + ride.id + '\')" class="star">' + star + '</span>' +
+                        '<div class="text-right">' +
+                            '<div class="wait ' + color + '">' + ride.wait + '</div>' +
+                            '<div class="text-xs -mt-1">min</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }
 
             document.getElementById('list').innerHTML = html || "<p class='text-center py-8 text-gray-400'>No rides</p>";
         }
 
         // Auto-refresh every 3 minutes
-        setInterval(() => {
+        setInterval(function() {
             if (document.visibilityState === 'visible') loadData();
         }, 180000);
 
