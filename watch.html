@@ -9,6 +9,7 @@
         body { background:#111827; color:white; font-family:system-ui; padding:12px; }
         .card { background:#1f2937; padding:16px; margin-bottom:12px; border-radius:16px; }
         .wait { font-size:2.6rem; font-weight:bold; }
+        .star { font-size:2.2rem; padding:4px 8px; }
     </style>
 </head>
 <body>
@@ -21,12 +22,21 @@
         <option value="ak">Animal Kingdom</option>
     </select>
 
-    <button onclick="loadData()" class="w-full py-4 bg-blue-600 rounded-2xl mb-6">Refresh</button>
-    
+    <div class="flex gap-3 mb-6">
+        <button onclick="toggleFavs()" id="favBtn" class="flex-1 py-4 bg-purple-600 rounded-2xl">⭐ Favs</button>
+        <button onclick="cycleSort()" id="sortBtn" class="flex-1 py-4 bg-blue-600 rounded-2xl">Shortest</button>
+        <button onclick="loadData()" class="flex-1 py-4 bg-gray-700 rounded-2xl">Refresh</button>
+    </div>
+
     <div id="status" class="text-center text-sm mb-4"></div>
     <div id="list"></div>
 
     <script>
+        let currentRides = [];
+        let favorites = JSON.parse(localStorage.getItem('cg1Favorites')) || [];
+        let showFavsOnly = false;
+        let sortMode = 'shortest';
+
         const parks = {
             epcot: "47f90d2c-e191-4239-a466-5892ef59a88b",
             mk: "75ea578a-adc8-4116-a54d-dccb60765ef9",
@@ -36,35 +46,90 @@
 
         async function loadData() {
             const status = document.getElementById('status');
-            const list = document.getElementById('list');
             status.textContent = "Loading...";
-            list.innerHTML = "";
-
             try {
                 const pid = parks[document.getElementById('park').value];
                 const res = await fetch("https://api.themeparks.wiki/v1/entity/" + pid + "/live");
                 const data = await res.json();
 
-                let html = "";
-                (data.liveData || []).forEach(item => {
-                    if (item.entityType !== "ATTRACTION") return;
-                    const wait = item.queue?.STANDBY?.waitTime || 0;
-                    html += `
-                        <div class="card">
-                            <div class="text-lg">${item.name}</div>
-                            <div class="text-sm text-gray-400">${item.status || "Unknown"}</div>
-                            <div class="wait ${wait < 30 ? 'text-green-400' : wait < 60 ? 'text-yellow-400' : 'text-red-400'}">
-                                ${wait} min
-                            </div>
-                        </div>
-                    `;
-                });
-                list.innerHTML = html || "<p class='text-center py-8'>No rides found</p>";
+                currentRides = (data.liveData || []).filter(item => item.entityType === "ATTRACTION").map(item => ({
+                    id: item.id || 'ride-' + Math.random().toString(36).substr(2,9),
+                    name: item.name,
+                    wait: parseInt(item.queue?.STANDBY?.waitTime) || 0,
+                    status: item.status || "Unknown"
+                }));
+
+                renderList();
                 status.textContent = "Updated just now";
             } catch(e) {
-                status.textContent = "Error - try Refresh";
+                status.textContent = "Error - tap Refresh";
                 console.error(e);
             }
+        }
+
+        function isFav(id) { return favorites.indexOf(id) > -1; }
+
+        function toggleStar(id) {
+            if (isFav(id)) {
+                favorites = favorites.filter(x => x !== id);
+            } else {
+                favorites.push(id);
+            }
+            localStorage.setItem('cg1Favorites', JSON.stringify(favorites));
+            renderList();
+        }
+
+        function toggleFavs() {
+            showFavsOnly = !showFavsOnly;
+            document.getElementById('favBtn').textContent = showFavsOnly ? "All" : "⭐ Favs";
+            renderList();
+        }
+
+        function cycleSort() {
+            if (sortMode === 'shortest') {
+                sortMode = 'longest';
+                document.getElementById('sortBtn').textContent = 'Longest';
+            } else if (sortMode === 'longest') {
+                sortMode = 'name';
+                document.getElementById('sortBtn').textContent = 'Name';
+            } else {
+                sortMode = 'shortest';
+                document.getElementById('sortBtn').textContent = 'Shortest';
+            }
+            renderList();
+        }
+
+        function renderList() {
+            let rides = currentRides;
+            if (showFavsOnly) rides = rides.filter(r => isFav(r.id));
+
+            let sorted = rides.slice();
+            if (sortMode === 'shortest') sorted.sort((a,b) => a.wait - b.wait);
+            else if (sortMode === 'longest') sorted.sort((a,b) => b.wait - a.wait);
+            else sorted.sort((a,b) => a.name.localeCompare(b.name));
+
+            let html = "";
+            sorted.forEach(ride => {
+                const star = isFav(ride.id) ? '★' : '☆';
+                const color = ride.wait < 30 ? 'text-green-400' : ride.wait < 60 ? 'text-yellow-400' : 'text-red-400';
+                html += `
+                    <div class="card flex justify-between items-center">
+                        <div class="flex-1">
+                            <div class="text-lg">${ride.name}</div>
+                            <div class="text-sm text-gray-400">${ride.status}</div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span onclick="toggleStar('\( {ride.id}')" class="star"> \){star}</span>
+                            <div class="text-right">
+                                <div class="wait \( {color}"> \){ride.wait}</div>
+                                <div class="text-xs -mt-1">min</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('list').innerHTML = html || "<p class='text-center py-8 text-gray-400'>No rides</p>";
         }
 
         loadData();
