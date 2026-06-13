@@ -6,32 +6,40 @@
     <title>CG1 Watch</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background:#111827; color:white; font-family:system-ui; padding:12px; }
-        .card { background:#1f2937; padding:16px; margin-bottom:12px; border-radius:16px; }
-        .wait { font-size:2.6rem; font-weight:bold; }
-        .star { font-size:2.2rem; padding:4px 8px; }
+        body { background:#111827; color:white; font-family:system-ui; padding:8px; }
+        .card { 
+            background:#1f2937; 
+            padding:10px 12px; 
+            margin-bottom:8px; 
+            border-radius:12px; 
+            font-size:1.05rem;
+        }
+        .wait { font-size:2.4rem; font-weight:bold; line-height:1; }
+        .star { font-size:2rem; padding:2px 6px; }
+        .ride-name { font-size:1.1rem; line-height:1.1; }
+        .red-dot { display:inline-block; width:12px; height:12px; background:#ef4444; border-radius:50%; }
     </style>
 </head>
 <body>
-    <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-bold text-blue-400">CG1 Watch</h1>
-        <div id="clock" class="font-mono text-lg"></div>
+    <div class="flex justify-between items-center mb-3">
+        <h1 class="text-xl font-bold text-blue-400">CG1 Watch</h1>
+        <div id="clock" class="font-mono text-base"></div>
     </div>
     
-    <select id="park" onchange="loadData()" class="w-full p-4 bg-gray-800 rounded-2xl text-xl mb-4">
+    <select id="park" onchange="loadData()" class="w-full p-3 bg-gray-800 rounded-2xl text-lg mb-4">
         <option value="epcot" selected>EPCOT</option>
-        <option value="mk">Magic Kingdom</option>
-        <option value="hs">Hollywood Studios</option>
-        <option value="ak">Animal Kingdom</option>
+        <option value="mk">MK</option>
+        <option value="hs">HS</option>
+        <option value="ak">AK</option>
     </select>
 
-    <div class="flex gap-3 mb-6">
-        <button onclick="toggleFavs()" id="favBtn" class="flex-1 py-4 bg-purple-600 rounded-2xl">⭐ Favs</button>
-        <button onclick="cycleSort()" id="sortBtn" class="flex-1 py-4 bg-blue-600 rounded-2xl">Shortest</button>
-        <button onclick="loadData()" class="flex-1 py-4 bg-gray-700 rounded-2xl">Refresh</button>
+    <div class="flex gap-2 mb-4">
+        <button onclick="toggleFavs()" id="favBtn" class="flex-1 py-3 bg-purple-600 rounded-2xl text-sm">⭐ Favs</button>
+        <button onclick="cycleSort()" id="sortBtn" class="flex-1 py-3 bg-blue-600 rounded-2xl text-sm">Shortest</button>
+        <button onclick="loadData()" class="flex-1 py-3 bg-gray-700 rounded-2xl text-sm">Refresh</button>
     </div>
 
-    <div id="status" class="text-center text-sm mb-4"></div>
+    <div id="status" class="text-center text-xs mb-3"></div>
     <div id="list"></div>
 
     <script>
@@ -74,10 +82,9 @@
                 });
 
                 renderList();
-                status.textContent = "Updated just now";
+                status.textContent = "Updated";
             } catch(e) {
                 status.textContent = "Error - tap Refresh";
-                console.error(e);
             }
         }
 
@@ -115,48 +122,43 @@
 
         function renderList() {
             let rides = currentRides;
-            if (showFavsOnly) {
-                rides = rides.filter(function(r) { return isFav(r.id); });
-            }
+            if (showFavsOnly) rides = rides.filter(function(r) { return isFav(r.id); });
 
             let sorted = rides.slice();
-            if (sortMode === 'shortest') {
-                sorted.sort(function(a,b){ return a.wait - b.wait; });
-            } else if (sortMode === 'longest') {
-                sorted.sort(function(a,b){ return b.wait - a.wait; });
-            } else {
-                sorted.sort(function(a,b){ return a.name.localeCompare(b.name); });
-            }
+            if (sortMode === 'shortest') sorted.sort(function(a,b){ return a.wait - b.wait; });
+            else if (sortMode === 'longest') sorted.sort(function(a,b){ return b.wait - a.wait; });
+            else sorted.sort(function(a,b){ return a.name.localeCompare(b.name); });
 
             let html = "";
             for (var i = 0; i < sorted.length; i++) {
                 var ride = sorted[i];
                 var star = isFav(ride.id) ? '★' : '☆';
-                var colorClass = ride.wait < 30 ? 'color:green' : (ride.wait < 60 ? 'color:#fbbf24' : 'color:red');
+                var colorClass = ride.wait < 30 ? 'color:#4ade80' : (ride.wait < 60 ? 'color:#fbbf24' : 'color:#f87171');
+                var isDown = ride.status && ride.status.toUpperCase().includes("CLOSE") || ride.status && ride.status.toUpperCase().includes("DOWN");
+                var downDot = isDown ? '<span class="red-dot"></span>' : '';
+                
                 html += '<div class="card flex justify-between items-center" style="display:flex">' +
-                    '<div style="flex:1">' +
-                        '<div style="font-size:1.1rem">' + ride.name + '</div>' +
-                        '<div style="font-size:0.875rem;color:#9ca3af">' + ride.status + '</div>' +
+                    '<div style="flex:1; padding-right:8px">' +
+                        '<div class="ride-name">' + ride.name + '</div>' +
+                        downDot +
                     '</div>' +
-                    '<div style="display:flex;align-items:center;gap:16px">' +
-                        '<span onclick="toggleStar(\'' + ride.id + '\')" style="font-size:2.2rem;padding:4px 8px;cursor:pointer">' + star + '</span>' +
-                        '<div style="text-align:right">' +
-                            '<div style="font-size:2.6rem;font-weight:bold;' + colorClass + '">' + ride.wait + '</div>' +
-                            '<div style="font-size:0.75rem;margin-top:-4px">min</div>' +
+                    '<div style="display:flex;align-items:center;gap:12px">' +
+                        '<span onclick="toggleStar(\'' + ride.id + '\')" style="font-size:2rem;padding:2px 6px;cursor:pointer">' + star + '</span>' +
+                        '<div style="text-align:right; min-width:60px">' +
+                            '<div style="font-size:2.4rem;font-weight:bold;' + colorClass + '">' + ride.wait + '</div>' +
+                            '<div style="font-size:0.7rem;margin-top:-4px">min</div>' +
                         '</div>' +
                     '</div>' +
                 '</div>';
             }
 
-            document.getElementById('list').innerHTML = html || "<p style='text-align:center;padding:32px 0;color:#9ca3af'>No rides loaded</p>";
+            document.getElementById('list').innerHTML = html || "<p style='text-align:center;padding:20px 0;color:#9ca3af'>No rides</p>";
         }
 
-        // Auto-refresh every 3 minutes
         setInterval(function() {
             if (document.visibilityState === 'visible') loadData();
         }, 180000);
 
-        // Init
         updateClock();
         loadData();
     </script>
