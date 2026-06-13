@@ -3,7 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CG1 Watch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background:#111827; color:white; font-family:system-ui; padding:8px; }
+        .card { 
+            background:#1f2937; 
+            padding:8px 12px; 
+            margin-bottom:6px; 
+            border-radius:12px; 
+        }
+        .wait { font-size:2.45rem; font-weight:bold; line-height:1; }
+        .star { font-size:2.1rem; padding:2px 6px; }
+        .ride-name { font-size:3.2rem; line-height:1.05; font-weight:500; }
+        .red-dot { display:inline-block; width:14px; height:14px; background:#ef4444; border-radius:50%; margin-right:8px; vertical-align:middle; }
+    </style>
+</head>
+<body>
+    <div class="flex justify-between items-center mb-3">
+        <h1 class="text-xl font-bold text-blue-400">CG1 Watch</h1>
+        <div id="clock" class="font-mono text-base"></div>
+    </div>
+    
+    <select id="park" onchange="loadData()" class="w-full p-3 bg-gray-800 rounded-2xl text-lg mb-4">
+        <option value="epcot" selected>EPCOT</option>
+        <option value="mk">MK</option>
+        <option value="hs">HS</option>
+        <option value="ak">AK</option>
+    </select>
+
+    <div class="flex gap-2 mb-4">
+        <button onclick="toggleFavs()" id="favBtn" class="flex-1 py-3 bg-purple-600 rounded-2xl text-sm">⭐ Favs</button>
+        <button onclick="cycleSort()" id="sortBtn" class="flex-1 py-3 bg-blue-600 rounded-2xl text-sm">Shortest</button>
+        <button onclick="loadData()" class="flex-1 py-3 bg-gray-700 rounded-2xl text-sm">Refresh</button>
+    </div>
+
+    <div id="status" class="text-center text-xs mb-3"></div>
+    <div id="list"></div>
+
+    <script>
+        let currentRides = [];
+        let favorites = JSON.parse(localStorage.getItem('cg1Favorites')) || [];
+        let showFavsOnly = false;
+        let sortMode = 'shortest';
+
+        const parks = {
+            epcot: "47f90d2c-e191-4239-a466-5892ef59a88b",
+            mk: "75ea578a-adc8-4116-a54d-dccb60765ef9",
+            hs: "288747d1-8b4f-4a64-867e-ea7c9b27bad8",
+            ak: "1c84a229-8862-4648-9c71-378ddd2c7693"
+        };
+
+        function updateClock() {
+            const clockEl = document.getElementById('clock');
+            setInterval(function() {
+                clockEl.textContent = new Date().toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'});
+            }, 1000);
+        }
+
+        async function loadData() {
+            const status = document.getElementById('status');
+            status.textContent = "Loading...";
+            try {
+                const pid = parks[document.getElementById('park').value];
+                const res = await fetch("https://api.themeparks.wiki/v1/entity/" + pid + "/live");
+                const data = await res.json();
+
+                currentRides = (data.liveData || []).filter(function(item) { 
+                    return item.entityType === "ATTRACTION"; 
+                }).map(function(item) {
+                    return {
+                        id: item.id || 'ride-' + Math.random().toString(36).substr(2,9),
+                        name: item.name,
+                        wait: parseInt(item.queue && item.queue.STANDBY && item.queue.STANDBY.waitTime) || 0,
+                        status: item.status || "Unknown"
+                    };
+                });
+
+                renderList();
+                status.textContent = "Updated";
+            } catch(e) {
+                status.textContent = "Error - tap Refresh";
+            }
+        }
+
+        function isFav(id) { return favorites.indexOf(id) > -1; }
+
+        function toggleStar(id) {
+            if (isFav(id)) {
+                favorites = favorites.filter(function(x) { return x !== id; });
+            } else {
+                favorites.push(id);
+            }
+            localStorage.setItem('cg1Favorites', JSON.stringify(favorites));
+            renderList();
+        }
+
+        function toggleFavs() {
+            showFavsOnly = !showFavsOnly;
+            document.getElementById('favBtn').textContent = showFavsOnly ? "All" : "⭐ Favs";
+            renderList();
+        }
+
+        function cycleSort() {
+            if (sortMode === 'shortest') {
+                sortMode = 'longest';
+                document.getElementById('sortBtn').textContent = 'Longest';
+            } else if (sortMode === 'longest') {
+                sortMode = 'name';
+                document.getElementById('sortBtn').textContent = 'Name';
+            } else {
+                sortMode = 'shortest';
+                document.getElementById('sortBtn').textContent = 'Shortest';
+            }
+            renderList();
+        }
+
+        function renderList() {
+            let rides = currentRides;
+            if (showFavsOnly) rides = rides.filter(function(r) { return isFav(r.id); });
+
+            let sorted = rides.slice();
+            if (sortMode === 'shortest') sorted.sort(function(a,b){ return a.wait - b.wait; });
+            else if (sortMode === 'longest') sorted.sort(function(a,b){ return b.wait - a.wait; });
+            else sorted.sort(function(a,b){ return a.name.localeCompare(b.name); });
+
+            let html = "";
+            for (var i = 0; i < sorted.length; i++) {
+                var ride = sorted[i];
+                var star = isFav(ride.id) ? '★' : '☆';
+                var colorClass = ride.wait < 30 ? 'color:#4ade80' : (ride.wait < 60 ? 'color:#fbbf24' : 'color:#f87171');
+                var isDown = ride.status && (ride.status.toUpperCase().includes("CLOSE") || ride.status.toUpperCase().includes("DOWN"));
+                var downDot = isDown ? '<span class="red-dot"></span>' : '';
+                var shortName = ride.name.length > 25 ? ride.name.substring(0, 25) + '…' : ride.name;
+                
+                html += '<div class="card flex justify-between items-center" style="display:flex">' +
+                    '<div style="flex:1; padding-right:8px">' +
+                        '<div class="ride-name">' + downDot + shortName + '</div>' +
+                    '</div>' +
+                    '<div style="display:flex;align-items:center;gap:12px">' +
+                        '<span onclick="toggleStar(\'' + ride.id + '\')" style="font-size:2.1rem;padding:2px 6px;cursor:pointer">' + star + '</span>' +
+                        '<div style="text-align:right; min-width:60px">' +
+                            '<div class="wait ' + colorClass + '">' + ride.wait + '</div>' +
+                            '<div style="font-size:0.7rem;margin-top:-4px">min</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }
+
+            document.getElementById('list').innerHTML = html || "<p style='text-align:center;padding:20px 0;color:#9ca3af'>No rides</p>";
+        }
+
+        setInterval(function() {
+            if (document.visibilityState === 'visible') loadData();
+        }, 180000);
+
+        updateClock();
+        loadData();
+    </script>
+</body>
+</html>  <title>CG1 Watch</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background:#111827; color:white; font-family:system-ui; padding:8px; }
