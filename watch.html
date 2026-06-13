@@ -46,10 +46,11 @@
         let mainFilter = 'all'; 
         let sortMode = 'shortest';
 
-        // Expanded true rides list based on your feedback
+        // Very explicit ride list based on your feedback
         const trueRides = new Set([
-            "Journey Into Imagination with Figment", "Figment", "Soarin' Around the World", "Gran Fiesta Tour Starring The Three Caballeros",
-            "Rise of the Resistance", "Alien Swirling Saucers", "Star Tours: The Adventures Continue",
+            "Journey Into Imagination with Figment", "Figment", "Soarin' Around the World", 
+            "Gran Fiesta Tour Starring The Three Caballeros", "Tres Caballeros",
+            "Rise of the Resistance", "Alien Swirling Saucers", "Star Tours: The Adventures Continue", "Star Tours",
             "It's a Small World", "Buzz Lightyear's Space Ranger Spin", "Under the Sea \~ Journey of the Little Mermaid",
             "Guardians of the Galaxy: Cosmic Rewind", "Test Track", "Frozen Ever After", "TRON Lightcycle / Run",
             "Space Mountain", "Big Thunder Mountain Railroad", "Seven Dwarfs Mine Train", "Tiana's Bayou Adventure",
@@ -82,7 +83,7 @@
                 const data = await res.json();
 
                 currentRides = (data.liveData || []).filter(function(item) { 
-                    return item.entityType === "ATTRACTION" || item.entityType === "SHOW"; 
+                    return item.entityType === "ATTRACTION"; 
                 }).map(function(item) {
                     const name = item.name || '';
                     return {
@@ -90,7 +91,6 @@
                         name: name,
                         wait: parseInt(item.queue && item.queue.STANDBY && item.queue.STANDBY.waitTime) || 0,
                         status: item.status || "Unknown",
-                        type: item.entityType,
                         isTrueRide: trueRides.has(name) || 
                                    name.toLowerCase().includes("mountain") || 
                                    name.toLowerCase().includes("coaster") || 
@@ -98,7 +98,15 @@
                                    name.toLowerCase().includes("tower") ||
                                    name.toLowerCase().includes("splash") ||
                                    name.toLowerCase().includes("flight") ||
-                                   name.toLowerCase().includes("river")
+                                   name.toLowerCase().includes("river") ||
+                                   name.toLowerCase().includes("figment") ||
+                                   name.toLowerCase().includes("soarin") ||
+                                   name.toLowerCase().includes("resistance") ||
+                                   name.toLowerCase().includes("swirling") ||
+                                   name.toLowerCase().includes("star tours") ||
+                                   name.toLowerCase().includes("small world") ||
+                                   name.toLowerCase().includes("buzz lightyear") ||
+                                   name.toLowerCase().includes("little mermaid")
                     };
                 });
 
