@@ -132,23 +132,23 @@
             for (var i = 0; i < sorted.length; i++) {
                 var ride = sorted[i];
                 var star = isFav(ride.id) ? '★' : '☆';
-                var color = ride.wait < 30 ? 'text-green-400' : (ride.wait < 60 ? 'text-yellow-400' : 'text-red-400');
-                html += '<div class="card flex justify-between items-center">' +
-                    '<div class="flex-1">' +
-                        '<div class="text-lg">' + ride.name + '</div>' +
-                        '<div class="text-sm text-gray-400">' + ride.status + '</div>' +
+                var colorClass = ride.wait < 30 ? 'color:green' : (ride.wait < 60 ? 'color:#fbbf24' : 'color:red');
+                html += '<div class="card flex justify-between items-center" style="display:flex">' +
+                    '<div style="flex:1">' +
+                        '<div style="font-size:1.1rem">' + ride.name + '</div>' +
+                        '<div style="font-size:0.875rem;color:#9ca3af">' + ride.status + '</div>' +
                     '</div>' +
-                    '<div class="flex items-center gap-4">' +
-                        '<span onclick="toggleStar(\'' + ride.id + '\')" class="star">' + star + '</span>' +
-                        '<div class="text-right">' +
-                            '<div class="wait ' + color + '">' + ride.wait + '</div>' +
-                            '<div class="text-xs -mt-1">min</div>' +
+                    '<div style="display:flex;align-items:center;gap:16px">' +
+                        '<span onclick="toggleStar(\'' + ride.id + '\')" style="font-size:2.2rem;padding:4px 8px;cursor:pointer">' + star + '</span>' +
+                        '<div style="text-align:right">' +
+                            '<div style="font-size:2.6rem;font-weight:bold;' + colorClass + '">' + ride.wait + '</div>' +
+                            '<div style="font-size:0.75rem;margin-top:-4px">min</div>' +
                         '</div>' +
                     '</div>' +
                 '</div>';
             }
 
-            document.getElementById('list').innerHTML = html || "<p class='text-center py-8 text-gray-400'>No rides</p>";
+            document.getElementById('list').innerHTML = html || "<p style='text-align:center;padding:32px 0;color:#9ca3af'>No rides loaded</p>";
         }
 
         // Auto-refresh every 3 minutes
