@@ -81,6 +81,7 @@
                     item.entityType === "ATTRACTION" || item.entityType === "SHOW"
                 ).map(item => {
                     const name = item.name || '';
+                    const lowerName = name.toLowerCase();
                     return {
                         id: item.id || 'ride-' + Math.random().toString(36).substr(2,9),
                         name: name,
@@ -88,18 +89,19 @@
                         status: item.status || "Unknown",
                         type: item.entityType,
                         isTrueRide: trueRides.has(name) || 
-                                   name.toLowerCase().includes("mountain") || 
-                                   name.toLowerCase().includes("coaster") || 
-                                   name.toLowerCase().includes("run") ||
-                                   name.toLowerCase().includes("tower") ||
-                                   name.toLowerCase().includes("splash") ||
-                                   name.toLowerCase().includes("flight") ||
-                                   name.toLowerCase().includes("river") ||
-                                   name.toLowerCase().includes("figment") ||
-                                   name.toLowerCase().includes("soarin") ||
-                                   name.toLowerCase().includes("resistance") ||
-                                   name.toLowerCase().includes("swirling") ||
-                                   name.toLowerCase().includes("star tours")
+                                   lowerName.includes("mountain") || 
+                                   lowerName.includes("coaster") || 
+                                   lowerName.includes("run") ||
+                                   lowerName.includes("tower") ||
+                                   lowerName.includes("splash") ||
+                                   lowerName.includes("flight") ||
+                                   lowerName.includes("river") ||
+                                   lowerName.includes("figment") ||
+                                   lowerName.includes("soarin") ||
+                                   lowerName.includes("resistance") ||
+                                   lowerName.includes("swirling") ||
+                                   lowerName.includes("star tours"),
+                        isMeet: lowerName.includes("meet") || lowerName.includes("meets") || lowerName.includes("character")
                     };
                 });
 
@@ -126,13 +128,15 @@
             if (mainFilter === 'all') mainFilter = 'ride';
             else if (mainFilter === 'ride') mainFilter = 'attraction';
             else if (mainFilter === 'attraction') mainFilter = 'show';
-            else if (mainFilter === 'show') mainFilter = 'favs';
+            else if (mainFilter === 'show') mainFilter = 'meet';
+            else if (mainFilter === 'meet') mainFilter = 'favs';
             else mainFilter = 'all';
 
             const btn = document.getElementById('mainBtn');
             if (mainFilter === 'ride') btn.textContent = 'Rides';
             else if (mainFilter === 'attraction') btn.textContent = 'Attractions';
             else if (mainFilter === 'show') btn.textContent = 'Shows';
+            else if (mainFilter === 'meet') btn.textContent = 'Meets';
             else if (mainFilter === 'favs') btn.textContent = '⭐ Favs';
             else btn.textContent = 'All';
 
@@ -154,22 +158,24 @@
         }
 
         function renderList() {
-            let rides = currentRides.slice();
+            let rides = currentRides;
 
             if (mainFilter === 'ride') {
                 rides = rides.filter(r => r.isTrueRide);
             } else if (mainFilter === 'attraction') {
-                rides = rides.filter(r => r.type === 'ATTRACTION' && !r.isTrueRide);
+                rides = rides.filter(r => r.type === 'ATTRACTION' && !r.isTrueRide && !r.isMeet);
             } else if (mainFilter === 'show') {
-                rides = rides.filter(r => r.type === 'SHOW');
+                rides = rides.filter(r => r.type === 'SHOW' && !r.isMeet);
+            } else if (mainFilter === 'meet') {
+                rides = rides.filter(r => r.isMeet);
             } else if (mainFilter === 'favs') {
                 rides = rides.filter(r => isFav(r.id));
             }
 
-            let sorted = rides;
-            if (sortMode === 'shortest') sorted = sorted.sort((a,b) => a.wait - b.wait);
-            else if (sortMode === 'longest') sorted = sorted.sort((a,b) => b.wait - a.wait);
-            else sorted = sorted.sort((a,b) => a.name.localeCompare(b.name));
+            let sorted = rides.slice();
+            if (sortMode === 'shortest') sorted.sort((a,b) => a.wait - b.wait);
+            else if (sortMode === 'longest') sorted.sort((a,b) => b.wait - a.wait);
+            else sorted.sort((a,b) => a.name.localeCompare(b.name));
 
             let html = "";
             sorted.forEach(ride => {
