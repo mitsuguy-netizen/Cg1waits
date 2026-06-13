@@ -43,17 +43,16 @@
     <script>
         let currentRides = [];
         let favorites = JSON.parse(localStorage.getItem('cg1Favorites')) || [];
-        let mainFilter = 'all'; 
+        let mainFilter = 'all'; // 'all', 'ride', 'attraction', 'show', 'favs'
         let sortMode = 'shortest';
 
-        // True rides list (based on everyride.com style challenges + common WDW ride lists)
+        // Strong ride list (true thrill / major rides)
         const trueRides = new Set([
             "Guardians of the Galaxy: Cosmic Rewind", "Test Track", "Frozen Ever After", "TRON Lightcycle / Run",
             "Space Mountain", "Big Thunder Mountain Railroad", "Seven Dwarfs Mine Train", "Tiana's Bayou Adventure",
-            "Pirates of the Caribbean", "Haunted Mansion", "Jungle Cruise", "Splash Mountain", "The Twilight Zone Tower of Terror",
+            "Pirates of the Caribbean", "Haunted Mansion", "Jungle Cruise", "The Twilight Zone Tower of Terror",
             "Rock 'n' Roller Coaster", "Rise of the Resistance", "Millennium Falcon: Smugglers Run", "Slinky Dog Dash",
             "Expedition Everest", "Avatar Flight of Passage", "Kilimanjaro Safaris", "Flight of Passage", "Na'vi River Journey"
-            // Add more as needed - this is a strong starting set
         ]);
 
         const parks = {
@@ -87,7 +86,8 @@
                         wait: parseInt(item.queue && item.queue.STANDBY && item.queue.STANDBY.waitTime) || 0,
                         status: item.status || "Unknown",
                         type: item.entityType,
-                        isTrueRide: trueRides.has(item.name) || item.name.includes("Mountain") || item.name.includes("Coaster") || item.name.includes("Run")
+                        isTrueRide: trueRides.has(item.name) || item.name.toLowerCase().includes("mountain") || 
+                                   item.name.toLowerCase().includes("coaster") || item.name.toLowerCase().includes("run")
                     };
                 });
 
@@ -112,12 +112,14 @@
 
         function cycleMainFilter() {
             if (mainFilter === 'all') mainFilter = 'ride';
-            else if (mainFilter === 'ride') mainFilter = 'show';
+            else if (mainFilter === 'ride') mainFilter = 'attraction';
+            else if (mainFilter === 'attraction') mainFilter = 'show';
             else if (mainFilter === 'show') mainFilter = 'favs';
             else mainFilter = 'all';
 
             const btn = document.getElementById('mainBtn');
             if (mainFilter === 'ride') btn.textContent = 'Rides';
+            else if (mainFilter === 'attraction') btn.textContent = 'Attractions';
             else if (mainFilter === 'show') btn.textContent = 'Shows';
             else if (mainFilter === 'favs') btn.textContent = '⭐ Favs';
             else btn.textContent = 'All';
@@ -144,8 +146,10 @@
 
             if (mainFilter === 'ride') {
                 rides = rides.filter(function(r) { return r.isTrueRide; });
+            } else if (mainFilter === 'attraction') {
+                rides = rides.filter(function(r) { return r.type === 'ATTRACTION'; });
             } else if (mainFilter === 'show') {
-                rides = rides.filter(function(r) { return !r.isTrueRide && r.type === 'SHOW'; });
+                rides = rides.filter(function(r) { return r.type === 'SHOW'; });
             } else if (mainFilter === 'favs') {
                 rides = rides.filter(function(r) { return isFav(r.id); });
             }
