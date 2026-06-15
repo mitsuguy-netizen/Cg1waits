@@ -46,26 +46,20 @@
         let mainFilter = 'all'; 
         let sortMode = 'shortest';
 
-        // Comprehensive rides list with your latest Hollywood Studios additions
         const trueRides = new Set([
-            // Epcot
             "Journey Into Imagination with Figment", "Soarin' Around the World", "Soarin' Across America",
             "Gran Fiesta Tour Starring The Three Caballeros", "Test Track", "Frozen Ever After", 
             "Guardians of the Galaxy: Cosmic Rewind", "Mission: SPACE", "The Seas with Nemo & Friends",
             "Remy's Ratatouille Adventure", "Living with the Land", "Spaceship Earth",
-            // Hollywood Studios
-            "Star Tours: The Adventures Continue", "Alien Swirling Saucers", "The Twilight Zone Tower of Terror",
-            "Slinky Dog Dash", "Mickey & Minnie's Runaway Railway", "Toy Story Mania!", 
-            "Star Wars: Rise of the Resistance", "Millennium Falcon: Smugglers Run", "Rock 'n' Roller Coaster",
-            // Magic Kingdom
-            "Space Mountain", "Big Thunder Mountain Railroad", "Seven Dwarfs Mine Train", "Tiana's Bayou Adventure",
-            "Pirates of the Caribbean", "Haunted Mansion", "Jungle Cruise", "The Twilight Zone Tower of Terror",
+            "Rise of the Resistance", "Alien Swirling Saucers", "Star Tours: The Adventures Continue",
             "It's a Small World", "Buzz Lightyear's Space Ranger Spin", "Under the Sea \~ Journey of the Little Mermaid",
             "Peter Pan's Flight", "The Many Adventures of Winnie the Pooh", "Prince Charming Regal Carrousel",
             "The Barnstormer", "Dumbo the Flying Elephant", "Mad Tea Party", "Tomorrowland Speedway",
             "Astro Orbiter", "The Magic Carpets of Aladdin", "Walt Disney World Railroad",
             "Tomorrowland Transit Authority PeopleMover", "Walt Disney's Enchanted Tiki Room",
-            "Walt Disney's Carousel of Progress", "Swiss Family Treehouse"
+            "Walt Disney's Carousel of Progress", "Swiss Family Treehouse",
+            "Kilimanjaro Safaris", "Na'vi River Journey", "Kali River Rapids", "Expedition Everest", 
+            "Avatar Flight of Passage"
         ]);
 
         const parks = {
@@ -112,7 +106,8 @@
                                    lower.includes("soarin") ||
                                    lower.includes("resistance") ||
                                    lower.includes("swirling") ||
-                                   lower.includes("star tours")
+                                   lower.includes("star tours"),
+                        isMeet: lower.includes("meet") || lower.includes("meets") || lower.includes("character")
                     };
                 });
 
