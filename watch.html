@@ -90,15 +90,14 @@
                 ).map(item => {
                     const name = item.name || '';
                     const lower = name.toLowerCase();
+                    const isMeet = lower.includes("meet") || lower.includes("meets") || lower.includes("character");
                     return {
                         id: item.id || 'ride-' + Math.random().toString(36).substr(2,9),
                         name: name,
                         wait: parseInt(item.queue && item.queue.STANDBY && item.queue.STANDBY.waitTime) || 0,
                         status: item.status || "Unknown",
                         type: item.entityType,
-                        isTrueRide: trueRides.has(name) || 
-                                   lower.includes("journey into imagination") || 
-                                   lower.includes("figment") ||
+                        isTrueRide: !isMeet && (trueRides.has(name) || 
                                    lower.includes("mountain") || 
                                    lower.includes("coaster") || 
                                    lower.includes("run") ||
@@ -109,7 +108,8 @@
                                    lower.includes("soarin") ||
                                    lower.includes("resistance") ||
                                    lower.includes("swirling") ||
-                                   lower.includes("star tours")
+                                   lower.includes("star tours")),
+                        isMeet: isMeet
                     };
                 });
 
