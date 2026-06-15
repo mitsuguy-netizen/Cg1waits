@@ -47,7 +47,7 @@
         let sortMode = 'shortest';
 
         const trueRides = new Set([
-            "Journey Into Imagination with Figment", "Figment",
+            "Journey Into Imagination with Figment",
             "Soarin' Around the World", "Soarin' Across America",
             "Gran Fiesta Tour Starring The Three Caballeros", "Test Track", "Frozen Ever After", 
             "Guardians of the Galaxy: Cosmic Rewind", "Mission: SPACE", "The Seas with Nemo & Friends",
@@ -97,18 +97,7 @@
                         wait: parseInt(item.queue && item.queue.STANDBY && item.queue.STANDBY.waitTime) || 0,
                         status: item.status || "Unknown",
                         type: item.entityType,
-                        isTrueRide: !isMeet && (trueRides.has(name) || 
-                                   lower.includes("mountain") || 
-                                   lower.includes("coaster") || 
-                                   lower.includes("run") ||
-                                   lower.includes("tower") ||
-                                   lower.includes("splash") ||
-                                   lower.includes("flight") ||
-                                   lower.includes("river") ||
-                                   lower.includes("soarin") ||
-                                   lower.includes("resistance") ||
-                                   lower.includes("swirling") ||
-                                   lower.includes("star tours")),
+                        isTrueRide: !isMeet && trueRides.has(name),
                         isMeet: isMeet
                     };
                 });
