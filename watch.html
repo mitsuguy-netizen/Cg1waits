@@ -97,6 +97,8 @@
                         status: item.status || "Unknown",
                         type: item.entityType,
                         isTrueRide: trueRides.has(name) || 
+                                   lower.includes("figment") || 
+                                   lower.includes("imagination with figment") ||
                                    lower.includes("mountain") || 
                                    lower.includes("coaster") || 
                                    lower.includes("run") ||
