@@ -41,7 +41,7 @@
     <div id="status" class="text-center text-xs mb-3"></div>
     <div id="list"></div>
 
-    <div class="version">v1.2</div>
+    <div class="version">v1.3</div>
 
     <script>
         let currentRides = [];
@@ -101,13 +101,16 @@
                     const name = item.name || '';
                     const lower = name.toLowerCase();
                     const isMeet = lower.includes("meet") || lower.includes("meets") || lower.includes("character");
+                    const isNonRide = lower.includes("first order searches") || 
+                                      lower.includes("animal encounters") || 
+                                      lower.includes("feathered friends");
                     return {
                         id: item.id || 'ride-' + Math.random().toString(36).substr(2,9),
                         name: name,
                         wait: parseInt(item.queue && item.queue.STANDBY && item.queue.STANDBY.waitTime) || 0,
                         status: item.status || "Unknown",
                         type: item.entityType,
-                        isTrueRide: !isMeet && (
+                        isTrueRide: !isMeet && !isNonRide && (
                             trueRides.has(name) ||
                             lower.includes("journey into imagination") ||
                             lower.includes("figment") ||
