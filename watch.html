@@ -40,6 +40,9 @@
             color: white;
             box-shadow: 0 0 0 4px rgba(255,255,255,0.3);
         }
+        button {
+            font-size: 1.05rem;
+        }
     </style>
 </head>
 <body>
@@ -51,15 +54,15 @@
     <div class="park-grid" id="parkGrid"></div>
 
     <div class="flex gap-2 mb-4">
-        <button onclick="cycleMainFilter()" id="mainBtn" class="flex-1 py-3 bg-purple-600 rounded-2xl text-sm">All</button>
-        <button onclick="cycleSort()" id="sortBtn" class="flex-1 py-3 bg-blue-600 rounded-2xl text-sm">Shortest</button>
-        <button onclick="loadData()" class="flex-1 py-3 bg-gray-700 rounded-2xl text-sm">Refresh</button>
+        <button onclick="cycleMainFilter()" id="mainBtn" class="flex-1 py-3 bg-purple-600 rounded-2xl text-base font-medium">All</button>
+        <button onclick="cycleSort()" id="sortBtn" class="flex-1 py-3 bg-blue-600 rounded-2xl text-base font-medium">Shortest</button>
+        <button onclick="loadData()" class="flex-1 py-3 bg-gray-700 rounded-2xl text-base font-medium">Refresh</button>
     </div>
 
     <div id="status" class="text-center text-xs mb-3"></div>
     <div id="list"></div>
 
-    <div class="version">v2.1</div>
+    <div class="version">v2.2</div>
 
     <script>
         let currentRides = [];
