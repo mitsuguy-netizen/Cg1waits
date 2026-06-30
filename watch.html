@@ -23,11 +23,24 @@
         .ride-name { font-size:1.95rem; line-height:1.1; font-weight:500; }
         .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
         .version { font-size:0.65rem; color:#6b7280; text-align:center; margin-top:12px; opacity:0.7; }
-        select { 
-            text-align: center; 
-            text-align-last: center; 
-            font-size:1.1rem;
-            padding:12px 8px;
+        .park-buttons {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scrollbar-width: none;
+        }
+        .park-btn {
+            padding: 8px 14px;
+            background: #374151;
+            border-radius: 9999px;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .park-btn.active {
+            background: #3b82f6;
+            color: white;
         }
     </style>
 </head>
@@ -36,13 +49,8 @@
         <h1 class="text-xl font-bold text-blue-400">CG1 Watch</h1>
         <div id="clock" class="font-mono text-lg"></div>
     </div>
-    
-    <select id="park" onchange="loadData()" class="w-full p-3 bg-gray-800 rounded-2xl text-lg mb-4">
-        <option value="epcot" selected>EPCOT</option>
-        <option value="mk">MK</option>
-        <option value="hs">HS</option>
-        <option value="ak">AK</option>
-    </select>
+
+    <div class="park-buttons" id="parkButtons"></div>
 
     <div class="flex gap-2 mb-4">
         <button onclick="cycleMainFilter()" id="mainBtn" class="flex-1 py-3 bg-purple-600 rounded-2xl text-sm">All</button>
@@ -53,25 +61,23 @@
     <div id="status" class="text-center text-xs mb-3"></div>
     <div id="list"></div>
 
-    <div class="version">v1.7</div>
+    <div class="version">v1.8</div>
 
     <script>
         let currentRides = [];
         let favorites = JSON.parse(localStorage.getItem('cg1Favorites')) || [];
         let mainFilter = 'all'; 
         let sortMode = 'shortest';
+        let currentPark = 'epcot';
 
         const trueRides = new Set([
-            // Epcot
             "Journey Into Imagination with Figment", "Soarin' Around the World", "Soarin' Across America",
             "Gran Fiesta Tour Starring The Three Caballeros", "Test Track", "Frozen Ever After", 
             "Guardians of the Galaxy: Cosmic Rewind", "Mission: SPACE", "The Seas with Nemo & Friends",
             "Remy's Ratatouille Adventure", "Living with the Land", "Spaceship Earth",
-            // Hollywood Studios
             "Star Tours: The Adventures Continue", "Alien Swirling Saucers", "The Twilight Zone Tower of Terror",
             "Slinky Dog Dash", "Mickey & Minnie's Runaway Railway", "Toy Story Mania!", 
             "Star Wars: Rise of the Resistance", "Millennium Falcon: Smugglers Run", "Rock 'n' Roller Coaster",
-            // Magic Kingdom
             "Big Thunder Mountain Railroad", "Seven Dwarfs Mine Train", "Tiana's Bayou Adventure",
             "Pirates of the Caribbean", "Haunted Mansion", "Jungle Cruise", "Space Mountain",
             "It's a Small World", "Buzz Lightyear's Space Ranger Spin", "Under the Sea \~ Journey of the Little Mermaid",
@@ -80,10 +86,16 @@
             "Astro Orbiter", "The Magic Carpets of Aladdin", "Walt Disney World Railroad",
             "Tomorrowland Transit Authority PeopleMover", "Walt Disney's Enchanted Tiki Room",
             "Walt Disney's Carousel of Progress", "Swiss Family Treehouse",
-            // Animal Kingdom
             "Kilimanjaro Safaris", "Na'vi River Journey", "Kali River Rapids", "Expedition Everest", 
             "Avatar Flight of Passage"
         ]);
+
+        const parkNames = {
+            epcot: "EPCOT",
+            mk: "MK",
+            hs: "HS",
+            ak: "AK"
+        };
 
         const parks = {
             epcot: "47f90d2c-e191-4239-a466-5892ef59a88b",
@@ -99,11 +111,27 @@
             }, 1000);
         }
 
+        function createParkButtons() {
+            const container = document.getElementById('parkButtons');
+            container.innerHTML = '';
+            Object.keys(parks).forEach(key => {
+                const btn = document.createElement('button');
+                btn.className = `park-btn ${key === currentPark ? 'active' : ''}`;
+                btn.textContent = parkNames[key];
+                btn.onclick = () => {
+                    currentPark = key;
+                    createParkButtons();
+                    loadData();
+                };
+                container.appendChild(btn);
+            });
+        }
+
         async function loadData() {
             const status = document.getElementById('status');
             status.textContent = "Loading...";
             try {
-                const pid = parks[document.getElementById('park').value];
+                const pid = parks[currentPark];
                 const res = await fetch("https://api.themeparks.wiki/v1/entity/" + pid + "/live");
                 const data = await res.json();
 
@@ -251,6 +279,7 @@
         }, 180000);
 
         updateClock();
+        createParkButtons();
         loadData();
     </script>
 </body>
